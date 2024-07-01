@@ -99,6 +99,9 @@ class RelativeDeltaField(models.Field):
     def select_format(self, compiler, sql, params):
         if compiler.connection.vendor == 'postgresql':
             fmt = 'to_char(%s, \'PYYYY"Y"MM"M"DD"DT"HH24"H"MI"M"SS.US"S"\')' % sql
+            # Use replace to avoid creation of intervals where the
+            # fractional (microseconds) part of seconds is negative.
+            fmt = 'replace(%s, \'.-\', \'.\')' % fmt
         else:
             fmt = sql
         return fmt, params
